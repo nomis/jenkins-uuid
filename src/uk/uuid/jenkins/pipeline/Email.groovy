@@ -26,7 +26,8 @@ class Email {
 			steps.echo("Previous Build: ${previousBuild.result}")
 
 			if (steps.currentBuild.currentResult == "SUCCESS"
-					&& previousBuild.result == "SUCCESS") {
+					&& previousBuild.result == "SUCCESS"
+					&& !steps.env.CHANGE_URL) {
 				return
 			}
 		}
