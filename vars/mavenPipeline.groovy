@@ -50,8 +50,7 @@ def call() {
 					stages {
 						stage("Checkout") {
 							steps {
-								cleanWs()
-								checkout scm
+								sh "git clean -fdx"
 							}
 						}
 						stage("Verify") {
