@@ -20,21 +20,40 @@ package uk.uuid.jenkins.pipeline
 class Email {
 	static def send(steps) {
 		steps.echo("Current Build: ${steps.currentBuild.currentResult}")
+		steps.echo("Change URL: ${steps.env.CHANGE_URL}")
 
 		def previousBuild = steps.currentBuild.previousBuild
 		if (previousBuild) {
 			steps.echo("Previous Build: ${previousBuild.result}")
 
 			if (steps.currentBuild.currentResult == "SUCCESS"
-					&& previousBuild.result == "SUCCESS") {
+					&& previousBuild.result == "SUCCESS"
+					&& steps.env.CHANGE_URL == null) {
 				return
 			}
 		}
 
+		def subject = "${steps.currentBuild.currentResult}: ${steps.env.JOB_NAME}#${steps.env.BUILD_NUMBER}"
+
+		if (steps.env.GIT_COMMIT) {
+			subject += " (${steps.env.GIT_COMMIT})"
+		}
+
+		def body = "${steps.env.BUILD_URL}\n"
+
+		if (steps.env.CHANGE_URL) {
+			body += "\n"
+			body += "Change: ${steps.env.CHANGE_TITLE}\n"
+			body += "  URL: ${steps.env.CHANGE_URL}\n"
+			body += "  From: ${steps.env.CHANGE_AUTHOR_DISPLAY_NAME} (${steps.env.CHANGE_AUTHOR})\n"
+			body += "  Source: ${steps.env.CHANGE_BRANCH}\n"
+			body += "  Target: ${steps.env.CHANGE_TARGET}\n"
+		}
+
 		steps.emailext([
 					to: "simon",
-					subject: "${steps.currentBuild.currentResult}: ${steps.env.JOB_NAME}#${steps.env.BUILD_NUMBER}",
-					body: "${steps.env.BUILD_URL}",
+					subject: subject,
+					body: body,
 				])
 	}
 }
