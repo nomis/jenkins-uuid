@@ -20,6 +20,7 @@ package uk.uuid.jenkins.pipeline
 class Email {
 	static def send(steps) {
 		steps.echo("Current Build: ${steps.currentBuild.currentResult}")
+		steps.echo("Change URL: ${steps.env.CHANGE_URL}")
 
 		def previousBuild = steps.currentBuild.previousBuild
 		if (previousBuild) {
