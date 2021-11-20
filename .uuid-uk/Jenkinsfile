@@ -8,7 +8,7 @@ def common = library(
 ).uk.uuid.jenkins.pipeline
 
 pipeline {
-	agent none
+	agent any
 	triggers {
 		cron("${common.Cron.schedule(this)}")
 	}
@@ -16,9 +16,7 @@ pipeline {
 		stage("Test") {
 			steps {
 				echo "Hello World 2!"
-				script {
-					sh "printenv"
-				}
+				sh "printenv"
 			}
 		}
 	}
