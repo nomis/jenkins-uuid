@@ -1,0 +1,29 @@
+def common = library(
+	identifier: "uuid@main",
+	retriever: modernSCM([
+		$class: "GitSCMSource",
+		remote: "https://github.com/nomis/jenkins-uuid.git",
+		credentialsId: "09218456-3c5d-493e-be04-d951b1d560c9",
+	])
+).uk.uuid.jenkins.pipeline
+
+pipeline {
+	agent none
+	triggers {
+		cron("${common.Cron.schedule(this)}")
+	}
+	stages {
+		stage("Test") {
+			steps {
+				echo "Hello World!"
+			}
+		}
+	}
+	post {
+		always {
+			script {
+				common.Email.send(this)
+			}
+		}
+	}
+}
