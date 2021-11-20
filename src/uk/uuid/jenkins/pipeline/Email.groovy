@@ -27,7 +27,7 @@ class Email {
 
 			if (steps.currentBuild.currentResult == "SUCCESS"
 					&& previousBuild.result == "SUCCESS"
-					&& !steps.env.CHANGE_URL) {
+					&& steps.env.CHANGE_URL == null) {
 				return
 			}
 		}
