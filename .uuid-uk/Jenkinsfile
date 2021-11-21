@@ -15,28 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-def common = library(
-	// https://issues.jenkins.io/browse/JENKINS-42079
-	identifier: "uuid@${env.BRANCH_NAME}",
-	changelog: false,
-	retriever: modernSCM([
-		$class: "GitSCMSource",
-		remote: "https://github.com/nomis/jenkins-uuid.git",
-		credentialsId: "09218456-3c5d-493e-be04-d951b1d560c9",
-		traits: [
-			[$class: "CloneOptionTrait", extension: [shallow: true, depth: 1, noTags: true]],
-			[$class: "RefSpecsSCMSourceTrait", templates: [
-				// https://issues.jenkins.io/browse/JENKINS-42079
-				[value: "+refs/heads/${env.BRANCH_NAME}:refs/remotes/origin/${env.BRANCH_NAME}"],
-			]],
-		],
-	])
-).uk.uuid.jenkins.pipeline
+// https://issues.jenkins.io/browse/JENKINS-42079
+def self = library("uuid@${env.BRANCH_NAME}")
+def Cron = self.uk.uuid.jenkins.pipeline.Cron
+def Email = self.uk.uuid.jenkins.pipeline.Email
 
 pipeline {
 	agent none
 	triggers {
-		cron("${common.Cron.schedule(this)}")
+		cron("${Cron.schedule(this)}")
 	}
 	stages {
 		stage("Test") {
@@ -48,7 +35,7 @@ pipeline {
 	post {
 		always {
 			script {
-				common.Email.send(this)
+				Email.send(this)
 			}
 		}
 	}
