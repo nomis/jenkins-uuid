@@ -34,9 +34,6 @@ def call() {
 		stages {
 			stage("Maven") {
 				matrix {
-					agent {
-						label "Java"
-					}
 					axes {
 						axis {
 							name "JAVA"
@@ -46,6 +43,9 @@ def call() {
 							name "MAVEN"
 							values "3"
 						}
+					}
+					agent {
+						label "Java"
 					}
 					tools {
 						jdk JAVA
