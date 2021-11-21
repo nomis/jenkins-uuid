@@ -25,6 +25,9 @@ pipeline {
 	triggers {
 		cron("${Cron.schedule(this)}")
 	}
+	environment {
+		TMPDIR = "${WORKSPACE_TMP}"
+	}
 	stages {
 		stage("Test") {
 			steps {

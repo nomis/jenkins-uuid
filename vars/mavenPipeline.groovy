@@ -28,6 +28,9 @@ def call() {
 		triggers {
 			cron("${Cron.schedule(this)}")
 		}
+		environment {
+			TMPDIR = WORKSPACE_TMP
+		}
 		stages {
 			stage("Maven") {
 				matrix {
