@@ -21,7 +21,7 @@ def Cron = self.uk.uuid.jenkins.pipeline.Cron
 def Email = self.uk.uuid.jenkins.pipeline.Email
 
 pipeline {
-	agent none
+	agent any
 	triggers {
 		cron("${Cron.schedule(this)}")
 	}
@@ -29,6 +29,7 @@ pipeline {
 		stage("Test") {
 			steps {
 				echo "Hello World!"
+				sh "printenv"
 			}
 		}
 	}
