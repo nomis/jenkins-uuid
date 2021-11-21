@@ -29,7 +29,7 @@ def call() {
 			cron("${Cron.schedule(this)}")
 		}
 		environment {
-			TMPDIR = WORKSPACE_TMP
+			TMPDIR = "${WORKSPACE_TMP}"
 		}
 		stages {
 			stage("Maven") {
