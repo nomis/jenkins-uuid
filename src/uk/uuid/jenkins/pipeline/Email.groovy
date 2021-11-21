@@ -17,10 +17,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package uk.uuid.jenkins.pipeline
 
-class Email {
+class Email implements Serializable {
 	static def send(steps) {
 		steps.echo("Current Build: ${steps.currentBuild.currentResult}")
-		steps.echo("Change URL: ${steps.env.CHANGE_URL}")
+
+		if (steps.env.CHANGE_URL) {
+			steps.echo("Change URL: ${steps.env.CHANGE_URL}")
+		}
 
 		def previousBuild = steps.currentBuild.previousBuild
 		if (previousBuild) {
@@ -33,13 +36,13 @@ class Email {
 			}
 		}
 
-		def subject = "${steps.currentBuild.currentResult}: ${steps.env.JOB_NAME}#${steps.env.BUILD_NUMBER}"
+		def subject = "${steps.currentBuild.currentResult}: ${steps.JOB_NAME}#${steps.BUILD_NUMBER}"
 
 		if (steps.env.GIT_COMMIT) {
 			subject += " (${steps.env.GIT_COMMIT})"
 		}
 
-		def body = "${steps.env.BUILD_URL}\n"
+		def body = "${steps.BUILD_URL}\n"
 
 		if (steps.env.CHANGE_URL) {
 			body += "\n"

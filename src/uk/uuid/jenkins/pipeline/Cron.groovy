@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package uk.uuid.jenkins.pipeline
 
-class Cron {
+class Cron implements Serializable {
 	static def schedule(steps) {
-		return steps.env.BRANCH_NAME.equals("main") ? "@weekly" : ""
+		return steps.BRANCH_NAME.equals("main") ? "@weekly" : ""
 	}
 }
