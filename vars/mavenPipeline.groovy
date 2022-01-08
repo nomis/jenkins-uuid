@@ -70,7 +70,7 @@ def call(body) {
 								expression { !maven_matrix_main() }
 							}
 							steps {
-								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT") {
+								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
 									sh "mvn verify"
 								}
 							}
@@ -109,8 +109,8 @@ def call(body) {
 								}
 								success {
 									script {
-										withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT") {
-											def artifactId = sh "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout"
+										withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
+											def artifactId = sh script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout", returnStdout: true
 
 											publishHTML([
 												allowMissing: false,
