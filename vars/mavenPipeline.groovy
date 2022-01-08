@@ -22,7 +22,15 @@ def maven_matrix_main() {
 	return JAVA == "17"
 }
 
-def call() {
+def call(body) {
+	PARAMS = [
+		hasTests: true,
+	]
+	body.resolveStrategy = Closure.DELEGATE_FIRST
+	body.delegate = PARAMS
+	body()
+	echo("Params: ${PARAMS}")
+
 	pipeline {
 		agent none
 		triggers {
@@ -77,14 +85,18 @@ def call() {
 							}
 							post {
 								always {
-									junit testResults: "target/surefire-reports/TEST-*.xml"
-									jacoco execPattern: "target/jacoco.exec"
+									script {
+										if (PARAMS.hasTests) {
+											junit testResults: "target/surefire-reports/TEST-*.xml"
+											jacoco execPattern: "target/jacoco.exec"
+										}
+									}
+
 									recordIssues enabledForFailure: true, tools: [
 										mavenConsole(),
 										java(),
 										javaDoc(),
-										spotBugs(),
-									]
+									] + (PARAMS.hasTests ? [spotBugs()] : [])
 								}
 								success {
 									script {
