@@ -25,6 +25,7 @@ def maven_matrix_main() {
 def call(body) {
 	PARAMS = [
 		hasTests: true,
+		deploySnapshot: false,
 	]
 	body.resolveStrategy = Closure.DELEGATE_FIRST
 	body.delegate = PARAMS
@@ -74,13 +75,21 @@ def call(body) {
 								}
 							}
 						}
-						stage("Verify & Site") {
+						stage("Verify/Deploy & Site") {
 							when {
 								expression { maven_matrix_main() }
 							}
 							steps {
-								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT") {
-									sh "mvn verify site"
+								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
+									script {
+										def version = sh script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true
+
+										if (PARAMS.deploySnapshot && version.endsWith("-SNAPSHOT")) {
+											sh "mvn deploy site"
+										} else {
+											sh "mvn verify site"
+										}
+									}
 								}
 							}
 							post {
