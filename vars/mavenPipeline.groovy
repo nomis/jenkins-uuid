@@ -22,10 +22,31 @@ def maven_matrix_main() {
 	return JAVA == "17"
 }
 
+def maven_matrix_labels() {
+	def labels = ["Java"]
+
+	if (PARAMS.requiresDisplay) {
+		labels.add("Xvfb")
+	}
+
+	return labels.join(" && ")
+}
+
+def display_wrapper(display, body) {
+	if (display) {
+		wrap([$class: "Xvfb", displayName: EXECUTOR_NUMBER as Integer, screen: "1920x1080x24", debug: true, timeout: 5]) {
+			body()
+		}
+	} else {
+		body()
+	}
+}
+
 def call(body) {
 	PARAMS = [
-		hasTests: true,
 		deploySnapshot: false,
+		hasTests: true,
+		requiresDisplay: false,
 	]
 	body.resolveStrategy = Closure.DELEGATE_FIRST
 	body.delegate = PARAMS
@@ -54,7 +75,7 @@ def call(body) {
 						}
 					}
 					agent {
-						label "Java"
+						label maven_matrix_labels()
 					}
 					tools {
 						jdk JAVA
@@ -71,7 +92,9 @@ def call(body) {
 							}
 							steps {
 								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
-									sh "mvn verify"
+									display_wrapper(PARAMS.requiresDisplay, {
+										sh "mvn verify"
+									})
 								}
 							}
 						}
@@ -83,12 +106,15 @@ def call(body) {
 								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
 									script {
 										def version = sh script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true
+										def goal = "verify"
 
 										if (PARAMS.deploySnapshot && version.endsWith("-SNAPSHOT")) {
-											sh "mvn deploy site"
-										} else {
-											sh "mvn verify site"
+											goal = "deploy"
 										}
+
+										display_wrapper(PARAMS.requiresDisplay, {
+											sh "mvn ${goal} site"
+										})
 									}
 								}
 							}
