@@ -48,9 +48,11 @@ def call(body) {
 		hasTests: true,
 		requiresDisplay: false,
 	]
-	body.resolveStrategy = Closure.DELEGATE_FIRST
-	body.delegate = PARAMS
-	body()
+	if (body) {
+		body.resolveStrategy = Closure.DELEGATE_FIRST
+		body.delegate = PARAMS
+		body()
+	}
 	echo("Params: ${PARAMS}")
 
 	pipeline {
