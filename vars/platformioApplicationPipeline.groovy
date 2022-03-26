@@ -41,6 +41,7 @@ def call() {
 			stage("Prepare") {
 				steps {
 					sh "pipenv install platformio"
+					sh "pipenv graph"
 					lock("NODE=${NODE_NAME} APP=platformio") {
 						sh "pipenv run platformio update"
 					}

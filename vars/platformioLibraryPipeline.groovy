@@ -1,5 +1,5 @@
 /*
-Copyright 2021  Simon Arlott
+Copyright 2021-2022  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ def call() {
 			stage("Prepare") {
 				steps {
 					sh "pipenv install platformio Sphinx"
+					sh "pipenv graph"
 					lock("NODE=${NODE_NAME} APP=platformio") {
 						sh "pipenv run platformio update"
 					}
