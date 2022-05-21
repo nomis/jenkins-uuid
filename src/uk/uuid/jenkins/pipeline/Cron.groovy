@@ -19,6 +19,6 @@ package uk.uuid.jenkins.pipeline
 
 class Cron implements Serializable {
 	static def schedule(steps) {
-		return steps.BRANCH_NAME.equals("main") ? "H H * * H(2-7)" : ""
+		return steps.BRANCH_NAME.equals("main") ? "H H(8-23) * * H(2-7)" : ""
 	}
 }
