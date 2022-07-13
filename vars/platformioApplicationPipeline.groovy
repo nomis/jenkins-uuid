@@ -40,20 +40,25 @@ def call() {
 			}
 			stage("Prepare") {
 				steps {
-					script {
-						sh "pipenv install platformio"
-						sh "pipenv graph"
-						lock("NODE=${NODE_NAME} APP=platformio") {
-							sh "pipenv run platformio update"
-						}
-						if (fileExists("pio_local.ini.example")) {
-							sh "cp pio_local.ini.example pio_local.ini"
-						}
+					sh "pipenv install platformio"
+					sh "pipenv graph"
+					lock("NODE=${NODE_NAME} APP=platformio") {
+						sh "pipenv run platformio update"
 					}
 				}
 			}
 			stage("Build") {
 				steps {
+					sh "pipenv run make"
+					sh "git diff --exit-code"
+				}
+			}
+			stage("Build (local)") {
+				when {
+					expression { fileExists("pio_local.ini.example") && !fileExists("pio_local.ini") }
+				}
+				steps {
+					sh "cp pio_local.ini.example pio_local.ini"
 					sh "pipenv run make"
 					sh "git diff --exit-code"
 				}
