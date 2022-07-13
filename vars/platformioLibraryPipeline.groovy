@@ -36,6 +36,8 @@ def call() {
 			stage("Checkout") {
 				steps {
 					sh "git clean -fdx"
+					sh "git submodule sync --recursive"
+					sh "git submodule update --init --recursive --depth 1"
 
 					script {
 						def PIO_LIBRARY = readJSON file: "library.json"
