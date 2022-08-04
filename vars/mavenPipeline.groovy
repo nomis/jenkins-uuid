@@ -1,5 +1,5 @@
 /*
-Copyright 2021  Simon Arlott
+Copyright 2021-2022  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -59,6 +59,9 @@ def call(body) {
 		agent none
 		triggers {
 			cron("${Cron.schedule(this)}")
+		}
+		options {
+			disableConcurrentBuilds()
 		}
 		environment {
 			TMPDIR = "${WORKSPACE_TMP}"

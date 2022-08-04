@@ -26,6 +26,9 @@ def call() {
 		triggers {
 			cron("${Cron.schedule(this)}")
 		}
+		options {
+			disableConcurrentBuilds()
+		}
 		environment {
 			CI = "true"
 			TMPDIR = "${WORKSPACE_TMP}"
