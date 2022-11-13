@@ -68,6 +68,15 @@ def call() {
 					sh "git diff --exit-code"
 				}
 			}
+			stage("Test") {
+				when {
+					expression { fileExists("test") }
+				}
+				steps {
+					sh "pipenv run make -C test"
+					sh "git diff --exit-code"
+				}
+			}
 			stage("Docs") {
 				when {
 					expression { fileExists("docs") }
