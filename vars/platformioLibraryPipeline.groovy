@@ -39,6 +39,7 @@ def call() {
 			stage("Checkout") {
 				steps {
 					sh "git clean -fdx"
+					sh "git fetch --tags"
 					sh "git submodule sync"
 					sh "git submodule update --init --depth 1"
 
