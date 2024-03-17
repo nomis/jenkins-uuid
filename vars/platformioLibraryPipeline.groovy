@@ -68,6 +68,11 @@ def call() {
 					sh "pipenv run make -C docs html linkcheck"
 				}
 			}
+			stage("Registry") {
+				steps {
+					sh "pipenv run make -C test registry"
+				}
+			}
 		}
 		post {
 			always {
