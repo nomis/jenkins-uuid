@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022  Simon Arlott
+Copyright 2021-2022,2024  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,10 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import uk.uuid.jenkins.pipeline.Cron
 import uk.uuid.jenkins.pipeline.Email
 
-def call() {
+def call(body) {
+	config = [:]
+	if (body) {
+		body.resolveStrategy = Closure.DELEGATE_FIRST
+		body.delegate = config
+		body()
+	}
+
 	pipeline {
 		agent {
-			label "Linux && Python && doxygen && graphviz"
+			label "Linux && Docker"
 		}
 		triggers {
 			cron("${Cron.schedule(this)}")
@@ -32,46 +39,65 @@ def call() {
 		environment {
 			CI = "true"
 			TMPDIR = "${WORKSPACE_TMP}"
-			PIPENV_VENV_IN_PROJECT = "1"
-			PIPENV_SKIP_LOCK = "1"
+			PLATFORMIO_CORE_DIR = "${WORKSPACE_TMP}/.platformio"
 		}
 		stages {
-			stage("Checkout") {
-				steps {
-					sh "git clean -fdx"
-					sh "git fetch --tags"
-					sh "git submodule sync"
-					sh "git submodule update --init --depth 1"
-
-					script {
-						def PIO_LIBRARY = readJSON file: "library.json"
-						echo "Library: ${PIO_LIBRARY.name} v${PIO_LIBRARY.version} (${PIO_LIBRARY.description})"
-					}
-				}
-			}
 			stage("Prepare") {
 				steps {
-					sh "pipenv install platformio==6.1.5 Sphinx"
-					sh "pipenv graph"
-					lock("NODE=${NODE_NAME} APP=platformio") {
-						sh "pipenv run platformio update"
+					echo "Config: ${config}"
+					dir(WORKSPACE_TMP) {
+						writeFile(file: "Dockerfile", text:libraryResource("platformio.Dockerfile"))
+						sh "rm -f requirements.txt"
+						sh "touch requirements.txt"
+					}
+					sh "[ ! -e .uuid-uk/requirements.txt ] || cat .uuid-uk/requirements.txt > \"${WORKSPACE_TMP}/requirements.txt\""
+				}
+			}
+			stage("Docker") {
+				agent {
+					dockerfile {
+						dir WORKSPACE_TMP
+						filename "Dockerfile"
+						additionalBuildArgs (
+							"--build-arg PIO_VERSION=\"${(config.pio_version ? "==${config.pio_version}" : "")}\""
+							+ " --build-arg APT_PACKAGES=\"${(config.apt_packages ?: []).join(" ")}\""
+						)
+						args "--mount source=var-cache-platformio,target=/var/cache/platformio"
+						reuseNode true
 					}
 				}
-			}
-			stage("Test") {
-				steps {
-					sh "pipenv run make -C test"
-					sh "git diff --exit-code"
-				}
-			}
-			stage("Docs") {
-				steps {
-					sh "pipenv run make -C docs html linkcheck"
-				}
-			}
-			stage("Registry") {
-				steps {
-					sh "pipenv run make -C test registry"
+				stages {
+					stage("Checkout") {
+						steps {
+							sh "git clean -fdx"
+							sh "git fetch --tags"
+							sh "git submodule sync"
+							sh "git submodule update --init --depth 1"
+
+							script {
+								def PIO_LIBRARY = readJSON file: "library.json"
+								echo "Library: ${PIO_LIBRARY.name} v${PIO_LIBRARY.version} (${PIO_LIBRARY.description})"
+							}
+						}
+					}
+					stage("Test") {
+						steps {
+							sh "platformio --version"
+							sh "make -C test"
+							sh "git diff --exit-code"
+						}
+					}
+					stage("Docs") {
+						steps {
+							sh "doxygen --version"
+							sh "make -C docs html linkcheck"
+						}
+					}
+					stage("Registry") {
+						steps {
+							sh "make -C test registry"
+						}
+					}
 				}
 			}
 		}
