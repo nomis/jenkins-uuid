@@ -64,10 +64,10 @@ RUN <<EOF
 	cat >/entrypoint.sh <<EOT
 #!/bin/dash
 if [ -u /bin/dash ]; then
-	/bin/dash -pc "groupadd -g \$(id -g) user" </dev/null 1>/dev/null 2>/dev/null
-	/bin/dash -pc "useradd -u \$(id -u) -g \$(id -g) -d /home/user -s /bin/bash user" </dev/null 1>/dev/null 2>/dev/null
-	/bin/dash -pc "install -d -m 0700 -o user -g user /home/user /home/user/.cache /home/user/.cache/pip /home/user/.cache/pipenv /var/cache/platformio" </dev/null 1>/dev/null 2>/dev/null
-	/bin/dash -pc "chmod u-s /bin/dash" </dev/null 1>/dev/null 2>/dev/null
+	/bin/dash -pc "groupadd -g \$(id -g) user" || exit 1
+	/bin/dash -pc "useradd -u \$(id -u) -g \$(id -g) -d /home/user -s /bin/bash user" || exit 1
+	/bin/dash -pc "install -d -m 0700 -o user -g user /home/user /home/user/.cache /home/user/.cache/pip /home/user/.cache/pipenv /var/cache/platformio" || exit 1
+	/bin/dash -pc "chmod u-s /bin/dash" || exit 1
 fi
 exec "\$@"
 EOT
