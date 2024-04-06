@@ -1,5 +1,5 @@
 /*
-Copyright 2021  Simon Arlott
+Copyright 2021,2024  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,6 @@ package uk.uuid.jenkins.pipeline
 
 class Cron implements Serializable {
 	static def schedule(steps) {
-		return steps.BRANCH_NAME.equals("main") ? "H H(8-23) * * H(2-7)" : ""
+		return steps.BRANCH_NAME.equals("main") ? "H H(8-22) * * H(2-7)" : ""
 	}
 }
