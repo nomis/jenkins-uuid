@@ -1,17 +1,26 @@
 #!/bin/dash
 case "$1" in
+	# Don't run multiple builds concurrently when they could reuse cached
+	# parts by running sequentially.
 	build)
 		LOCK="${XDG_RUNTIME_DIR}/.lockfile-docker-build"
 		touch "$LOCK"
 		exec stdbuf -oL -eL flock --verbose -e "$LOCK" "/usr/bin/docker" "$@"
 		;;
 
+	# Don't try to start multiple containers at the same time.
 	run)
 		LOCK="${XDG_RUNTIME_DIR}/.lockfile-docker-run"
 		touch "$LOCK"
 		exec stdbuf -oL -eL flock -e "$LOCK" "/usr/bin/docker" "$@"
 		;;
 
+	# Jenkins doesn't allow any time for the ENTRYPOINT to finish before
+	# using the container so it may not be ready. It checks that "cat" is
+	# running but immediately continues on with only a warning even if it's
+	# not running yet. (https://issues.jenkins.io/browse/JENKINS-54389)
+	#
+	# Wait for health check before letting Jenkins run "top".
 	top)
 		attempts=300
 		while [ $attempts -gt 0 ]; do
