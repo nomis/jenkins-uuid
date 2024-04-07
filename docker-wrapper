@@ -48,12 +48,12 @@ case "$1" in
 				exit 1
 			fi
 
+			sleep 1
+
 			if [ $ok -eq 1 ]; then
 				exec stdbuf -oL -eL /usr/bin/docker "$@"
 				exit 1
 			fi
-
-			sleep 1
 		done
 		exit 1
 		;;
