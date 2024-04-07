@@ -1,0 +1,56 @@
+#!/bin/dash
+case "$1" in
+	build)
+		LOCK="${XDG_RUNTIME_DIR}/.lockfile-docker-build"
+		touch "$LOCK"
+		exec stdbuf -oL -eL flock --verbose -e "$LOCK" "/usr/bin/docker" "$@"
+		;;
+
+	run)
+		LOCK="${XDG_RUNTIME_DIR}/.lockfile-docker-run"
+		touch "$LOCK"
+		exec stdbuf -oL -eL flock -e "$LOCK" "/usr/bin/docker" "$@"
+		;;
+
+	top)
+		attempts=300
+		while [ $attempts -gt 0 ]; do
+			attempts=$(($attempts - 1))
+			ok=0
+
+			STATUS="$(/usr/bin/docker container inspect -f "{{.State.Status}}" "$2")"
+			RET=$?
+			[ $RET -ne 0 ] && exit $RET
+			if [ "$STATUS" = "running" ]; then
+				HEALTH="$(/usr/bin/docker container inspect -f "{{.State.Health}}" "$2")"
+				RET=$?
+				[ $RET -ne 0 ] && exit $RET
+				if [ "$HEALTH" = "<nil>" ]; then
+					ok=1
+				else
+					HEALTH_STATUS="$(/usr/bin/docker container inspect -f "{{.State.Health.Status}}" "$2")"
+					RET=$?
+					[ $RET -ne 0 ] && exit $RET
+					if [ "$HEALTH_STATUS" = "healthy" ]; then
+						ok=1
+					fi
+				fi
+			else
+				exit 1
+			fi
+
+			if [ $ok -eq 1 ]; then
+				exec stdbuf -oL -eL /usr/bin/docker "$@"
+				exit 1
+			fi
+
+			sleep 1
+		done
+		exit 1
+		;;
+
+	*)
+		exec stdbuf -oL -eL /usr/bin/docker "$@"
+		;;
+esac
+exit 1
