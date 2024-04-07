@@ -74,4 +74,5 @@ EOT
 	chmod +x /entrypoint.sh
 EOF
 
+HEALTHCHECK --start-period=1s --start-interval=1s --retries=1 CMD [ ! -u /bin/dash ]
 ENTRYPOINT ["/entrypoint.sh"]
