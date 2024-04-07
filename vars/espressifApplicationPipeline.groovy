@@ -27,9 +27,7 @@ def call(body) {
 	}
 
 	pipeline {
-		agent {
-			label "Linux && Docker"
-		}
+		agent none
 		triggers {
 			cron("${Cron.schedule(this)}")
 		}
@@ -41,42 +39,78 @@ def call(body) {
 			TMPDIR = "${WORKSPACE_TMP}"
 		}
 		stages {
-			stage("Prepare") {
-				steps {
-					echo "Config: ${config}"
-					dir(WORKSPACE_TMP) {
-						writeFile(file: "Dockerfile", text:libraryResource("espressif.Dockerfile"))
+			stage("Application") {
+				matrix {
+					when {
+						expression { TARGET in config.idf_targets }
 					}
-				}
-			}
-			stage("Docker") {
-				agent {
-					dockerfile {
-						dir WORKSPACE_TMP
-						filename "Dockerfile"
-						args "--mount source=user-cache-espressif,target=/home/user/.cache/Espressif"
-						reuseNode true
-					}
-				}
-				stages {
-					stage("Checkout") {
-						steps {
-							sh "git clean -fdx"
-							sh "git submodule sync"
-							sh "git submodule update --init --depth 1"
+					axes {
+						axis {
+							name "TARGET"
+							values "esp32", "esp32s2", "esp32c3", "esp32s3", "esp32c2", "esp32c6", "esp32h2"
 						}
 					}
-					stage("Build") {
-						steps {
-							sh """
-								set +x
-								. "\${IDF_PATH}/export.sh"
-								set -x
-								idf.py --version
-								make target
-								make build
-							"""
-							sh "git diff --exit-code"
+					stages {
+						/*
+						 * Need to run this stage on "agent none" so that the
+						 * "when" is evaluated before running on a node.
+						 */
+						stage("Target") {
+							agent {
+								label "Linux && Docker"
+							}
+							stages {
+								/*
+								 * Run this stage on a Docker node to create the
+								 * Dockerfile in the workspace and then reuse
+								 * the node for the container.
+								 */
+								stage("Prepare") {
+									steps {
+										echo "Config: ${config}"
+										dir(WORKSPACE_TMP) {
+											writeFile(file: "Dockerfile", text:libraryResource("espressif.Dockerfile"))
+										}
+									}
+								}
+								stage("Docker") {
+									agent {
+										dockerfile {
+											dir WORKSPACE_TMP
+											filename "Dockerfile"
+											args "--mount source=user-cache-espressif,target=/home/user/.cache/Espressif"
+											reuseNode true
+										}
+									}
+									stages {
+										stage("Checkout") {
+											steps {
+												sh "git clean -fdx"
+												sh "git submodule sync"
+												sh "git submodule update --init --depth 1"
+											}
+										}
+										stage("Build") {
+											steps {
+												sh """
+													set +x
+													. "\${IDF_PATH}/export.sh" || exit 1
+													set -x
+													idf.py --version || exit 1
+													idf.py set-target ${TARGET} || exit 1
+													idf.py build || exit 1
+												"""
+												sh "git diff --exit-code"
+											}
+										}
+									}
+								}
+							}
+							post {
+								cleanup {
+									cleanWs()
+								}
+							}
 						}
 					}
 				}
@@ -87,9 +121,6 @@ def call(body) {
 				script {
 					Email.send(this)
 				}
-			}
-			cleanup {
-				cleanWs()
 			}
 		}
 	}

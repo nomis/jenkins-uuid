@@ -43,6 +43,10 @@ def call(body) {
 		}
 		stages {
 			stage("Prepare") {
+				/*
+				 * Run this stage on a Docker node to create the Dockerfile in
+				 * the workspace and then reuse the node for the container.
+				 */
 				steps {
 					echo "Config: ${config}"
 					dir(WORKSPACE_TMP) {
