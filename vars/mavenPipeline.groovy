@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022  Simon Arlott
+Copyright 2021-2022,2024  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ def call(body) {
 		deploySnapshot: false,
 		hasTests: true,
 		requiresDisplay: false,
+		debug: false,
 	]
 	if (body) {
 		body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -100,7 +101,7 @@ def call(body) {
 							steps {
 								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
 									display_wrapper(PARAMS.requiresDisplay, {
-										sh "mvn verify"
+										sh "mvn ${PARAMS.debug ? "-X" : ""} verify"
 									})
 								}
 							}
