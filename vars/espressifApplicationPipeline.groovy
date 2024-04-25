@@ -100,6 +100,8 @@ def call(body) {
 													idf.py set-target ${TARGET} || exit 1
 													idf.py build || exit 1
 												"""
+												sh "git diff dependencies.lock*"
+												sh "git restore dependencies.lock*"
 												sh "git diff --exit-code"
 											}
 										}
