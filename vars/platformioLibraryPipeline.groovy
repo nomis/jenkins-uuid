@@ -87,6 +87,7 @@ def call(body) {
 					stage("Test") {
 						steps {
 							sh "platformio --version"
+							sh "pio settings set check_prune_system_threshold 0"
 							sh "make -C test"
 							sh "git diff --exit-code"
 						}
