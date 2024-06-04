@@ -18,7 +18,7 @@ RUN \
 	--mount=type=cache,target=/root/.cache/pip,sharing=locked,id=espressif-idf-latest-root-cache-pip \
 	python3 --version && \
 	pip3 --version && \
-	pip3 install pipenv
+	pip3 install --break-system-packages pipenv
 
 RUN git config --system safe.directory "*"
 
