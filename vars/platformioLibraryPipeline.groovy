@@ -66,7 +66,7 @@ def call(body) {
 							"--build-arg PIO_VERSION=\"${(config.pio_version ? "==${config.pio_version}" : "")}\""
 							+ " --build-arg APT_PACKAGES=\"${(config.apt_packages ?: []).join(" ")}\""
 						)
-						args "--mount source=var-cache-platformio,target=/var/cache/platformio"
+						args "--mount source=var-cache-platformio${(config.pio_version ? "-${config.pio_version}" : "")},target=/var/cache/platformio"
 						reuseNode true
 					}
 				}
