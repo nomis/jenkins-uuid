@@ -94,7 +94,9 @@ def call(body) {
 											steps {
 												sh """
 													set +x
-													. "\${IDF_PATH}/export.sh" || exit 1
+													cd "\${IDF_PATH}" || exit 1
+													. ./export.sh || exit 1
+													cd - || exit 1
 													set -x
 													idf.py --version || exit 1
 													idf.py set-target ${TARGET} || exit 1
