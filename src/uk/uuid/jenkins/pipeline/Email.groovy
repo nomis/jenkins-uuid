@@ -1,5 +1,5 @@
 /*
-Copyright 2021  Simon Arlott
+Copyright 2021,2025  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ class Email implements Serializable {
 			if (steps.currentBuild.currentResult == "SUCCESS"
 					&& previousBuild.result == "SUCCESS"
 					&& steps.env.CHANGE_URL == null) {
+				"/home/simon/bin/ci-success".execute()
 				return
 			}
 		}
@@ -58,5 +59,11 @@ class Email implements Serializable {
 					subject: subject,
 					body: body,
 				])
+
+		if (steps.currentBuild.currentResult == "SUCCESS") {
+			"/home/simon/bin/ci-success".execute()
+		} else if (steps.currentBuild.currentResult == "FAILURE") {
+			"/home/simon/bin/ci-failure".execute()
+		}
 	}
 }
