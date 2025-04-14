@@ -32,7 +32,7 @@ class Email implements Serializable {
 			if (steps.currentBuild.currentResult == "SUCCESS"
 					&& previousBuild.result == "SUCCESS"
 					&& steps.env.CHANGE_URL == null) {
-				"/home/simon/bin/ci-success".execute()
+				"/home/simon/bin/ci-success ${steps.JOB_NAME}#${steps.BUILD_NUMBER} ${steps.BUILD_URL}".execute()
 				return
 			}
 		}
@@ -61,9 +61,9 @@ class Email implements Serializable {
 				])
 
 		if (steps.currentBuild.currentResult == "SUCCESS") {
-			"/home/simon/bin/ci-success".execute()
+			"/home/simon/bin/ci-success ${steps.JOB_NAME}#${steps.BUILD_NUMBER} ${steps.BUILD_URL}".execute()
 		} else if (steps.currentBuild.currentResult == "FAILURE") {
-			"/home/simon/bin/ci-failure".execute()
+			"/home/simon/bin/ci-failure ${steps.JOB_NAME}#${steps.BUILD_NUMBER} ${steps.BUILD_URL}".execute()
 		}
 	}
 }
