@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022,2024  Simon Arlott
+Copyright 2021-2022,2024-2025  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -131,7 +131,10 @@ def call(body) {
 									script {
 										if (PARAMS.hasTests) {
 											junit testResults: "target/surefire-reports/TEST-*.xml"
-											jacoco execPattern: "target/jacoco.exec"
+											recordCoverage(
+												tools: [[parser: "JACOCO", pattern: "target/jacoco.exec"]],
+												sourceCodeRetention: "NEVER",
+											)
 										}
 									}
 
