@@ -132,7 +132,7 @@ def call(body) {
 										if (PARAMS.hasTests) {
 											junit testResults: "target/surefire-reports/TEST-*.xml"
 											recordCoverage(
-												tools: [[parser: "JACOCO", pattern: "target/jacoco.exec"]],
+												tools: [[parser: "JACOCO", pattern: "target/site/jacoco/jacoco.xml"]],
 												sourceCodeRetention: "NEVER",
 											)
 										}
