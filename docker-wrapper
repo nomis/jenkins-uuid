@@ -5,20 +5,8 @@ case "$1" in
 	build)
 		LOCK="${XDG_RUNTIME_DIR}/.lockfile-docker-build"
 		touch "$LOCK"
-
-		# Download the latest base image instead of letting it go out of date
-		DOCKERFILE=Dockerfile
-		PREV_ARG=
-		for ARG in "$@"; do
-			if [ "$PREV_ARG" = "-f" ]; then
-				DOCKERFILE="$ARG"
-			fi
-			PREV_ARG="$ARG"
-		done
-		BASE="$(grep -E '^FROM ' "$DOCKERFILE" | head -n 1 | awk '{print $2}')"
-		exec stdbuf -oL -eL flock --verbose -e "$LOCK" "/usr/bin/docker" image pull "$BASE"
-
-		exec stdbuf -oL -eL flock --verbose -e "$LOCK" "/usr/bin/docker" "$@"
+		shift 1
+		exec stdbuf -oL -eL flock --verbose -e "$LOCK" "/usr/bin/docker" build --pull "$@"
 		;;
 
 	# Don't try to start multiple containers at the same time.
