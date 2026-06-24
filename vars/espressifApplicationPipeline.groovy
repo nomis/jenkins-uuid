@@ -78,7 +78,11 @@ def call(body) {
 										dockerfile {
 											dir WORKSPACE_TMP
 											filename "Dockerfile"
-											args "--mount source=user-cache-espressif,target=/home/user/.cache/Espressif"
+											args (
+												"--mount source=user-cache-espressif,target=/home/user/.cache/Espressif"
+												+ " --mount source=user-cache-pip,target=/home/user/.cache/pip"
+												+ " --mount source=user-cache-pipenv,target=/home/user/.cache/pipenv"
+											)
 											reuseNode true
 										}
 									}
