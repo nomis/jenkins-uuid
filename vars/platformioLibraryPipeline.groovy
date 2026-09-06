@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022,2024  Simon Arlott
+Copyright 2021-2022,2024,2026  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ def call(body) {
 				stages {
 					stage("Checkout") {
 						steps {
-							sh "git clean -fdx"
+							sh "git clean -ffdx"
 							sh "git fetch --tags"
 							sh "git submodule sync"
 							sh "git submodule update --init --depth 1"
@@ -98,9 +98,48 @@ def call(body) {
 							sh "make -C docs html linkcheck"
 						}
 					}
-					stage("Registry") {
+					stage("Publish") {
+						when {
+							expression { config.publish }
+						}
 						steps {
-							sh "make -C test registry"
+							script {
+								def PIO_LIBRARY = readJSON file: "library.json"
+								def PIO_VERSIONS = sh (
+									script: "platformio pkg show \"${config.publish.owner}/${PIO_LIBRARY.name}\" | grep -A 1000000 -E ^Version | tail -n +3 | grep -vE '^\$' | awk '{print \$1}' | sort -",
+									returnStdout: true
+								).tokenize('\n')
+								def ALL_TAGS = sh (
+									script: "git tag | sort -n | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+\$'",
+									returnStdout: true
+								).tokenize('\n')
+								def PUBLISH_TAGS = (ALL_TAGS.toSet() - PIO_VERSIONS.toSet()).toList().sort()
+
+								echo "Tags: ${ALL_TAGS}"
+								echo "Registry: ${PIO_VERSIONS}"
+								echo "Publish: ${PUBLISH_TAGS}"
+
+								if (PUBLISH_TAGS) {
+									withCredentials([
+											usernamePassword(credentialsId: "platformio",
+												usernameVariable: "PIO_USER",
+												passwordVariable: "PIO_PASS")
+											]) {
+										sh (
+											script: 'pio account login -u "$PIO_USER" -p "$PIO_PASS"',
+											returnStatus: true
+										)
+										sh 'pio account show'
+									}
+								}
+
+								for (tag in PUBLISH_TAGS) {
+									sh "git worktree add publish-$tag $tag"
+									dir("publish-$tag") {
+										sh "pio pkg publish --owner \"${config.publish.owner}\" --no-interactive"
+									}
+								}
+							}
 						}
 					}
 				}
