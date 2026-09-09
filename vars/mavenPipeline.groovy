@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2022,2024-2025  Simon Arlott
+Copyright 2021-2022,2024-2026  Simon Arlott
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ def call(body) {
 		hasTests: true,
 		requiresDisplay: false,
 		debug: false,
+		release: true,
 	]
 	if (body) {
 		body.resolveStrategy = Closure.DELEGATE_FIRST
@@ -159,6 +160,20 @@ def call(body) {
 												reportFiles: "index.html",
 											])
 										}
+									}
+								}
+							}
+						}
+						stage("Release (dry-run)") {
+							when {
+								expression { maven_matrix_main() && PARAMS.release }
+							}
+							steps {
+								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
+									script {
+										display_wrapper(PARAMS.requiresDisplay, {
+											sh "mvn release:prepare -DdryRun=true"
+										})
 									}
 								}
 							}
