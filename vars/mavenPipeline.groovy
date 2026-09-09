@@ -171,9 +171,13 @@ def call(body) {
 							steps {
 								withMaven(maven: MAVEN, publisherStrategy: "EXPLICIT", traceability: false) {
 									script {
-										display_wrapper(PARAMS.requiresDisplay, {
-											sh "mvn release:prepare -DdryRun=true"
-										})
+										def version = sh script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true
+
+										if (version.endsWith("-SNAPSHOT")) {
+											display_wrapper(PARAMS.requiresDisplay, {
+												sh "mvn release:prepare -DdryRun=true"
+											})
+										}
 									}
 								}
 							}
