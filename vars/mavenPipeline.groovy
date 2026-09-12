@@ -48,7 +48,7 @@ def call(body) {
 		hasTests: true,
 		requiresDisplay: false,
 		debug: false,
-		release: true,
+		release: false,
 	]
 	if (body) {
 		body.resolveStrategy = Closure.DELEGATE_FIRST
