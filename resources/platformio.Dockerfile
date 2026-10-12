@@ -23,7 +23,7 @@ RUN \
 	--mount=type=cache,target=/root/.cache/pip,sharing=locked,id=debian-testing-root-cache-pip \
 	python3 --version && \
 	pip3 --version && \
-	pip3 install --break-system-packages -U "platformio$PIO_VERSION"
+	pip3 install --root-user-action ignore --break-system-packages --ignore-installed -U "platformio$PIO_VERSION"
 ENV PIO_VERSION=
 
 ADD https://pypi.org/pypi/Sphinx/json /dev/shm/Sphinx.json
@@ -31,7 +31,7 @@ RUN \
 	--mount=type=cache,target=/root/.cache/pip,sharing=locked,id=debian-testing-root-cache-pip \
 	python3 --version && \
 	pip3 --version && \
-	pip3 install --break-system-packages -U Sphinx
+	pip3 install --root-user-action ignore --break-system-packages --ignore-installed -U Sphinx
 
 ARG APT_PACKAGES=
 RUN \
@@ -45,7 +45,7 @@ RUN \
 	--mount=type=cache,target=/root/.cache/pip,sharing=locked,id=debian-testing-root-cache-pip \
 	python3 --version && \
 	pip3 --version && \
-	pip3 install --break-system-packages -U -r /root/requirements.txt
+	pip3 install --root-user-action ignore --break-system-packages --ignore-installed -U -r /root/requirements.txt
 
 ENV PLATFORMIO_CACHE_DIR=/var/cache/platformio/cache
 ENV PLATFORMIO_PACKAGES_DIR=/var/cache/platformio/packages
